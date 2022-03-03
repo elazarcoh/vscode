@@ -13454,8 +13454,6 @@ declare module 'vscode' {
 		 */
 		readonly workspaceFolder: WorkspaceFolder | undefined;
 
-		focusedStackFrameId(): Thenable<number | undefined>;
-
 		/**
 		 * The "resolved" {@link DebugConfiguration debug configuration} of this session.
 		 * "Resolved" means that
@@ -13916,6 +13914,11 @@ declare module 'vscode' {
 		export let activeDebugConsole: DebugConsole;
 
 		/**
+		 * The currently focused stack-frame id, or `undefined` if no stack frame is focused (e.g. not in debug mode).
+		 */
+		export let focusedStackFrameId: number | undefined;
+
+		/**
 		 * List of breakpoints.
 		 */
 		export let breakpoints: readonly Breakpoint[];
@@ -13946,6 +13949,11 @@ declare module 'vscode' {
 		 * An {@link Event} that is emitted when the set of breakpoints is added, removed, or changed.
 		 */
 		export const onDidChangeBreakpoints: Event<BreakpointsChangeEvent>;
+
+		/**
+		 * An {@link Event} that is emitted when the focused stack frame changes.
+		 */
+		export const onDidChangeFocusedStackFrame: Event<number | undefined>;
 
 		/**
 		 * Register a {@link DebugConfigurationProvider debug configuration provider} for a specific debug type.

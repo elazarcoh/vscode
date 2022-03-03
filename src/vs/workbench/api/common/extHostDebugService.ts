@@ -47,7 +47,9 @@ export interface IExtHostDebugService extends ExtHostDebugServiceShape {
 	activeDebugConsole: vscode.DebugConsole;
 	onDidReceiveDebugSessionCustomEvent: Event<vscode.DebugSessionCustomEvent>;
 	onDidChangeBreakpoints: Event<vscode.BreakpointsChangeEvent>;
+	onDidChangeFocusedStackFrame: Event<number | undefined>;
 	breakpoints: vscode.Breakpoint[];
+	focusedStackFrameId: number | undefined;
 
 	addBreakpoints(breakpoints0: readonly vscode.Breakpoint[]): Promise<void>;
 	removeBreakpoints(breakpoints0: readonly vscode.Breakpoint[]): Promise<void>;
@@ -98,6 +100,9 @@ export abstract class ExtHostDebugServiceBase implements IExtHostDebugService, E
 
 	private readonly _onDidChangeBreakpoints: Emitter<vscode.BreakpointsChangeEvent>;
 
+	private _focusedStackFrameId: number | undefined;
+	private readonly _onDidChangeFocusedStackFrame: Emitter<number | undefined>;
+
 	private _debugAdapters: Map<number, IDebugAdapter>;
 	private _debugAdaptersTrackers: Map<number, vscode.DebugAdapterTracker>;
 
@@ -137,6 +142,8 @@ export abstract class ExtHostDebugServiceBase implements IExtHostDebugService, E
 				this.startBreakpoints();
 			}
 		});
+
+		this._onDidChangeFocusedStackFrame = new Emitter<number | undefined>();
 
 		this._activeDebugConsole = new ExtHostDebugConsole(this._debugServiceProxy);
 
@@ -198,6 +205,14 @@ export abstract class ExtHostDebugServiceBase implements IExtHostDebugService, E
 	}
 
 	// extension debug API
+
+	get focusedStackFrameId(): number | undefined {
+		return this._focusedStackFrameId;
+	}
+
+	get onDidChangeFocusedStackFrame(): Event<number | undefined> {
+		return this._onDidChangeFocusedStackFrame.event;
+	}
 
 	get onDidChangeBreakpoints(): Event<vscode.BreakpointsChangeEvent> {
 		return this._onDidChangeBreakpoints.event;
@@ -596,6 +611,11 @@ export abstract class ExtHostDebugServiceBase implements IExtHostDebugService, E
 		this.fireBreakpointChanges(a, r, c);
 	}
 
+	public $acceptFocusedStackFrameId(stackFrameId: number): void {
+		this._focusedStackFrameId = stackFrameId;
+		this._onDidChangeFocusedStackFrame.fire(stackFrameId);
+	}
+
 	public $provideDebugConfigurations(configProviderHandle: number, folderUri: UriComponents | undefined, token: CancellationToken): Promise<vscode.DebugConfiguration[]> {
 		return asPromise(async () => {
 			const provider = this.getConfigProviderByHandle(configProviderHandle);
@@ -911,10 +931,6 @@ export class ExtHostDebugSession implements vscode.DebugSession {
 
 	public get configuration(): vscode.DebugConfiguration {
 		return this._configuration;
-	}
-
-	public focusedStackFrameId(): Promise<number | undefined> {
-		return this._debugServiceProxy.$getDebugSessionDetails(this._id).then(response => response.focusedStackFrameId);
 	}
 
 	public customRequest(command: string, args: any): Promise<any> {

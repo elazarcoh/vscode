@@ -57,6 +57,11 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
 		this._sessions = new Set();
 	}
 
+	$getDebugSessionDetails(id: string | undefined): Promise<{ focusedStackFrameId: number | undefined }> {
+		const model = this.debugService.getViewModel();
+		return Promise.resolve({ focusedStackFrameId: model.focusedStackFrame?.frameId });
+	}
+
 	public dispose(): void {
 		this._toDispose.dispose();
 	}

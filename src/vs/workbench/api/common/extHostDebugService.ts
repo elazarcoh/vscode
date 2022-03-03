@@ -913,6 +913,10 @@ export class ExtHostDebugSession implements vscode.DebugSession {
 		return this._configuration;
 	}
 
+	public focusedStackFrameId(): Promise<number | undefined> {
+		return this._debugServiceProxy.$getDebugSessionDetails(this._id).then(response => response.focusedStackFrameId);
+	}
+
 	public customRequest(command: string, args: any): Promise<any> {
 		return this._debugServiceProxy.$customDebugAdapterRequest(this._id, command, args);
 	}

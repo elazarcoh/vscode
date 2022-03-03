@@ -13454,6 +13454,8 @@ declare module 'vscode' {
 		 */
 		readonly workspaceFolder: WorkspaceFolder | undefined;
 
+		focusedStackFrameId(): Thenable<number | undefined>;
+
 		/**
 		 * The "resolved" {@link DebugConfiguration debug configuration} of this session.
 		 * "Resolved" means that
